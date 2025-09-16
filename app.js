@@ -1,13 +1,16 @@
-import dotenv from "dotenv";
-dotenv.config();
 import express from "express";
-import path from "path";
-import cors from "cors";
 import bodyParser from "body-parser";
+import cors from "cors";
+import path from "path";
+import dotenv from "dotenv";
+
 import donationRoutes from "./routes/donations.js";
 import stripeWebhook from "./routes/stripeWebhook.js";
 import connectDB from "./config/db.js";
+import Donation from "./models/Donation.js";
 
+// Load env variables
+dotenv.config();
 
 // Connect DB
 connectDB();
@@ -39,8 +42,6 @@ app.get("/", (req, res) => {
 });
 
 // Health check with DB
-import Donation from "./models/Donation.js";
-
 app.get("/api/health", async (req, res) => {
   try {
     const count = await Donation.countDocuments(); // quick DB query
@@ -59,7 +60,7 @@ app.get("/api/health", async (req, res) => {
 
 // Auto-port fallback logic
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
+
 const server = app.listen(PORT, () => {
   console.log(`🚀 Server running on http://localhost:${PORT}`);
 });
@@ -69,7 +70,8 @@ server.on("error", (err) => {
     const newPort = PORT + 1;
     console.log(`⚠️ Port ${PORT} in use, trying ${newPort}...`);
 
-     console.log(`🚀 Server running on http://localhost:${newPort}`);
+    app.listen(newPort, () => {
+      console.log(`🚀 Server running on http://localhost:${newPort}`);
     });
   } else {
     throw err;
