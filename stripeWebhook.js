@@ -9,17 +9,19 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
 });
 
 // Stripe Webhook
-router.post("/", express.raw({ type: "application/json" }), async (req, res) => {
+  router.post("/", express.raw({ type: "application/json" }), async (req, res) => {
+  console.log("⚡ Stripe webhook called");
   const sig = req.headers["stripe-signature"];
-  let event;
+  console.log("Stripe signature:", sig);
 
+  let event;
   try {
     event = stripe.webhooks.constructEvent(
       req.body,
       sig,
       process.env.STRIPE_WEBHOOK_SECRET
     );
-    console.log("⚡ Webhook received:", event.type);
+    console.log("✅ Webhook event constructed:", event.type);
   } catch (err) {
     console.error("❌ Webhook signature verification failed:", err.message);
     return res.status(400).send(`Webhook Error: ${err.message}`);

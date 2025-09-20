@@ -42,6 +42,10 @@ const __dirname = path.resolve();
 app.use(express.static(path.join(__dirname, "public")));
 
 // Stripe requires raw body ONLY for webhooks
+app.get("/api/health", (req, res) => {
+  res.send("Backend is running ✅");
+});
+
 app.use(
   "/api/stripe/webhook",
   bodyParser.raw({ type: "application/json" }),

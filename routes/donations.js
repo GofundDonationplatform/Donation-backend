@@ -1,24 +1,10 @@
-// backend/routes/donations.js
 import express from "express";
-import "../config/env.js"; // <-- ensures dotenv is loaded first
-import Stripe from "stripe";
 import Donation from "../models/Donation.js";
+import Stripe from "stripe";
 
 const router = express.Router();
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
-// Initialize Stripe safely
-let stripe;
-if (process.env.STRIPE_SECRET_KEY) {
-  stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
-  console.log(
-    "Stripe Secret Loaded: ✅",
-    process.env.STRIPE_SECRET_KEY.slice(0, 8) + "..."
-  );
-} else {
-  console.error("Stripe Secret Loaded: ❌ No");
-}
-
-// POST /api/donations/create-checkout-session
 router.post("/create-checkout-session", async (req, res) => {
   try {
     const { amount } = req.body;
