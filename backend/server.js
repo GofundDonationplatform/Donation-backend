@@ -9,7 +9,6 @@ import flutterwaveWebhook from "./routes/flutterwaveWebhook.js";
 import paypalRoutes from "./routes/paypalRoutes.js";
 import stripePay from "./routes/stripePay.js";
 
-
 dotenv.config();
 const app = express();
 
@@ -37,7 +36,7 @@ app.get("/", (req, res) => {
   res.send("GoFundSS Backend is running ✅");
 });
 
-// ✅ Catch all other routes (important fix for “Cannot GET /api/donate”)
+// ✅ Catch all other routes (important fix for “Cannot GET /api/...”)
 app.use((req, res) => {
   res.status(404).json({ error: "Route not found" });
 });
