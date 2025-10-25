@@ -6,6 +6,9 @@ import mongoose from "mongoose";
 
 import flutterwavePay from "./routes/flutterwavePay.js";
 import flutterwaveWebhook from "./routes/flutterwaveWebhook.js";
+import paypalRoutes from "./routes/paypalRoutes.js";
+import stripePay from "./routes/stripePay.js";
+
 
 dotenv.config();
 const app = express();
@@ -26,6 +29,8 @@ mongoose
 // ✅ Routes
 app.use("/api/donate", flutterwavePay);
 app.use("/api/webhook/flutterwave", flutterwaveWebhook);
+app.use("/api/paypal", paypalRoutes);
+app.use("/api/stripe", stripePay);
 
 // ✅ Health check route
 app.get("/", (req, res) => {
