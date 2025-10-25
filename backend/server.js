@@ -27,11 +27,18 @@ mongoose
 app.use("/api/donate", flutterwavePay);
 app.use("/api/webhook/flutterwave", flutterwaveWebhook);
 
-// ✅ Base route
+// ✅ Health check route
 app.get("/", (req, res) => {
   res.send("GoFundSS Backend is running ✅");
 });
 
+// ✅ Catch all other routes (important fix for “Cannot GET /api/donate”)
+app.use((req, res) => {
+  res.status(404).json({ error: "Route not found" });
+});
+
 // ✅ Start server
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
+app.listen(PORT, () =>
+  console.log(`🚀 Server running on port ${PORT}`)
+);
