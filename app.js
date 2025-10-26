@@ -7,6 +7,8 @@ import dotenv from "dotenv";
 import donationRoutes from "./routes/donations.js";
 import stripeWebhook from "./routes/stripeWebhook.js";
 import connectDB from "./config/db.js";
+import flutterwavePay from "./routes/flutterwavePay.js";
+import paypalRoutes from "./routes/paypalRoutes.js";
 
 // Load env
 dotenv.config();
@@ -56,6 +58,10 @@ app.use(
 app.use(cors());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
+
+// Payment routes (added)
+app.use("/api/donate", flutterwavePay);
+app.use("/api/paypal", paypalRoutes);
 
 // Routes
 app.use("/api/donations", donationRoutes);
