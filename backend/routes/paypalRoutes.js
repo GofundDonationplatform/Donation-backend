@@ -5,7 +5,6 @@ import dotenv from "dotenv";
 import Donation from "../models/Donation.js";
 
 dotenv.config();
-
 const router = express.Router();
 
 // ✅ Generate PayPal access token
@@ -17,7 +16,9 @@ async function generateAccessToken() {
       username: process.env.PAYPAL_CLIENT_ID,
       password: process.env.PAYPAL_SECRET,
     },
-    params: { grant_type: "client_credentials" },
+    params: {
+      grant_type: "client_credentials",
+    },
   });
   return response.data.access_token;
 }
@@ -26,7 +27,6 @@ async function generateAccessToken() {
 router.post("/create-order", async (req, res) => {
   try {
     const { amount, currency = "USD", name, email } = req.body;
-
     const accessToken = await generateAccessToken();
 
     const order = await axios.post(
@@ -46,12 +46,8 @@ router.post("/create-order", async (req, res) => {
           brand_name: "GoFundSS Donation Platform",
           landing_page: "LOGIN",
           user_action: "PAY_NOW",
-          return_url: `${
-            process.env.FRONTEND_URL || "http://localhost:5173"
-          }/donate-success`,
-          cancel_url: `${
-            process.env.FRONTEND_URL || "http://localhost:5173"
-          }/donate-cancel`,
+          return_url: `${process.env.FRONTEND_URL || "http://localhost:5173"}/donate-success`,
+          cancel_url: `${process.env.FRONTEND_URL || "http://localhost:5173"}/donate-cancel`,
         },
       },
       {
@@ -96,7 +92,7 @@ router.post("/capture-order", async (req, res) => {
       }
     );
 
-    // Update donation
+    // Update donation status
     await Donation.findOneAndUpdate(
       { tx_ref: orderID },
       { status: "successful", meta: capture.data }
