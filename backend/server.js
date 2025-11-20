@@ -26,7 +26,7 @@ mongoose
   .catch((err) => console.error("❌ Mongo connection error:", err));
 
 // ✅ Routes
-app.use("/api/donate", flutterwavePay);
+app.use("/api/flutterwave", flutterwavePay);
 app.use("/api/webhook/flutterwave", flutterwaveWebhook);
 app.use("/api/paypal", paypalRoutes);
 //app.use("/api/stripe", stripePay);

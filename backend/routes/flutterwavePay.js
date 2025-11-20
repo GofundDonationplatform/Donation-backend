@@ -6,9 +6,12 @@ dotenv.config();
 
 const router = express.Router();
 
-const genRef = () => "tx_" + Date.now() + "_" + Math.random().toString(36).slice(2, 9);
+// Generate unique references
+const genRef = () =>
+  "tx_" + Date.now() + "_" + Math.random().toString(36).slice(2, 9);
 
-router.post("/", async (req, res) => {
+// POST /api/flutterwave/create-payment
+router.post("/create-payment", async (req, res) => {
   try {
     const { name, email, amount, currency = "USD" } = req.body;
 
@@ -18,7 +21,8 @@ router.post("/", async (req, res) => {
 
     const tx_ref = genRef();
 
-    const donation = await Donation.create({
+    // Save donation
+    await Donation.create({
       name: name || "Anonymous",
       email: email || "donor@example.com",
       amount: Number(amount),
@@ -27,6 +31,7 @@ router.post("/", async (req, res) => {
       status: "pending",
     });
 
+    // Payload for Flutterwave
     const payload = {
       tx_ref,
       amount: String(amount),
@@ -45,12 +50,17 @@ router.post("/", async (req, res) => {
       },
     };
 
-    const resp = await axios.post("https://api.flutterwave.com/v3/payments", payload, {
-      headers: {
-        Authorization: `Bearer ${process.env.FLW_SECRET_KEY}`,
-        "Content-Type": "application/json",
-      },
-    });
+    // Flutterwave API request
+    const resp = await axios.post(
+      "https://api.flutterwave.com/v3/payments",
+      payload,
+      {
+        headers: {
+          Authorization: `Bearer ${process.env.FLW_SECRET_KEY}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
 
     if (resp.data?.status === "success" && resp.data?.data?.link) {
       return res.json({ link: resp.data.data.link, tx_ref });
