@@ -12,6 +12,23 @@ import paypalRoutes from "./routes/paypalRoutes.js";
 dotenv.config();
 const app = express();
 
+// DEBUG ENV CHECKER
+console.log("DEBUG: Loaded Environment Variables:");
+[
+  "MONGO_URI",
+  "FLW_SECRET_KEY",
+  "FLW_PUBLIC_KEY",
+  "FLW_ENCRYPTION_KEY",
+  "FLW_WEBHOOK_SECRET",
+  "PAYSTACK_SECRET_KEY",
+  "SEERBIT_SECRET",
+  "CHIPPER_SECRET_KEY",
+  "PAYPAL_CLIENT_ID",
+  "PAYPAL_CLIENT_SECRET"
+].forEach(key => {
+  console.log(`- ${key}: ${process.env[key] ? "✅ Loaded" : "❌ MISSING"}`);
+});
+
 // ✅ Middleware
 app.use(cors());
 app.use(express.json());
@@ -26,7 +43,7 @@ mongoose
   .catch((err) => console.error("❌ Mongo connection error:", err));
 
 // ✅ Routes
-app.use("/api/flutterwave", flutterwavePay);
+app.use("/api/donate", flutterwavePay);
 app.use("/api/webhook/flutterwave", flutterwaveWebhook);
 app.use("/api/paypal", paypalRoutes);
 //app.use("/api/stripe", stripePay);
