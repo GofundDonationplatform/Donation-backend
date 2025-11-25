@@ -3,6 +3,7 @@ import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
 import mongoose from "mongoose";
+import paystackRoutes from "./routes/paystack.js";
 
 import flutterwavePay from "./routes/flutterwavePay.js";
 import flutterwaveWebhook from "./routes/flutterwaveWebhook.js";
@@ -46,6 +47,7 @@ mongoose
 app.use("/api/donate", flutterwavePay);
 app.use("/api/webhook/flutterwave", flutterwaveWebhook);
 app.use("/api/paypal", paypalRoutes);
+app.use("/api/paystack", paystackRoutes);
 //app.use("/api/stripe", stripePay);
 
 // ✅ Health check route
