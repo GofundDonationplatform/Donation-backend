@@ -1,53 +1,86 @@
+// routes/paystackRoutes.js
 import express from "express";
 import axios from "axios";
+import Donation from "../models/Donation.js"; // adjust path if your models folder is elsewhere
+import dotenv from "dotenv";
+dotenv.config();
 
 const router = express.Router();
 
-const PAYSTACK_SECRET = process.env.PAYSTACK_SECRET_KEY;
-
-// 🟢 Initialize Payment
+// Initialize a Paystack transaction
+// Expects: { amount: Number (major units), email: string, name?: string, currency?: 'NGN' }
 router.post("/initialize", async (req, res) => {
   try {
-    const { amount, email, name, currency } = req.body;
+    const { amount, email = "donor@example.com", name = "Donor", currency = "NGN" } = req.body;
+    if (!amount || isNaN(amount) || Number(amount) <= 0) {
+      return res.status(400).json({ error: "Invalid amount" });
+    }
 
-    const response = await axios.post(
-      "https://api.paystack.co/transaction/initialize",
-      {
-        amount: amount * 100, // Paystack uses kobo
-        email,
-        currency: currency || "NGN",
-        metadata: { name },
-      },
-      {
-        headers: {
-          Authorization: `Bearer ${PAYSTACK_SECRET}`,
-          "Content-Type": "application/json",
-        },
-      }
-    );
+    const paystackSecret = process.env.PAYSTACK_SECRET_KEY;
+    if (!paystackSecret) return res.status(500).json({ error: "Paystack secret not configured" });
 
-    return res.json(response.data.data);
-  } catch (error) {
-    console.error("Paystack Init Error:", error.response?.data);
-    res.status(500).json({
-      status: "failed",
-      message: "Could not initialize payment",
-      error: error.response?.data,
+    // Paystack expects amount in kobo for NGN (multiply by 100). For other currencies, check Paystack docs.
+    const payAmount = Math.round(Number(amount) * 100);
+
+    // Generate a unique reference
+    const tx_ref = `ps_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+
+    // Optional: create a pending Donation record
+    await Donation.create({
+      name,
+      email,
+      amount: Number(amount),
+      currency,
+      tx_ref,
+      status: "pending",
     });
+
+    const callback_url = `${(process.env.FRONTEND_URL || "http://localhost:5173").replace(/\/$/, "")}/donate-success`;
+
+    const body = {
+      email,
+      amount: payAmount,
+      reference: tx_ref,
+      callback_url,
+    };
+
+    const response = await axios.post("https://api.paystack.co/transaction/initialize", body, {
+      headers: {
+        Authorization: `Bearer ${paystackSecret}`,
+        "Content-Type": "application/json",
+      },
+    });
+
+    // Return Paystack's data
+    res.json(response.data.data || response.data);
+  } catch (err) {
+    console.error("Paystack initialize error:", err.response?.data || err.message);
+    res.status(500).json({ error: "Failed to initialize Paystack transaction", details: err.response?.data || err.message });
   }
 });
 
-// 🟢 Paystack Webhook (optional but recommended)
-router.post("/webhook", express.raw({ type: "application/json" }), (req, res) => {
+// Verify a transaction by reference (GET /api/paystack/verify?reference=...)
+router.get("/verify", async (req, res) => {
   try {
-    const event = req.body;
+    const { reference } = req.query;
+    const paystackSecret = process.env.PAYSTACK_SECRET_KEY;
+    if (!reference) return res.status(400).json({ error: "Missing reference" });
+    if (!paystackSecret) return res.status(500).json({ error: "Paystack secret not configured" });
 
-    console.log("🔔 Paystack Webhook Event:", event);
+    const response = await axios.get(`https://api.paystack.co/transaction/verify/${encodeURIComponent(reference)}`, {
+      headers: { Authorization: `Bearer ${paystackSecret}` },
+    });
 
-    res.sendStatus(200);
+    // If successful, update Donation status
+    const data = response.data?.data;
+    if (data && data.status === "success") {
+      await Donation.findOneAndUpdate({ tx_ref: reference }, { status: "successful", meta: data });
+    }
+
+    res.json(response.data);
   } catch (err) {
-    console.error("Webhook Error:", err);
-    res.sendStatus(400);
+    console.error("Paystack verify error:", err.response?.data || err.message);
+    res.status(500).json({ error: "Paystack verify failed", details: err.response?.data || err.message });
   }
 });
 
