@@ -3,13 +3,18 @@ import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
 import mongoose from "mongoose";
-import paystackRoutes from "./routes/paystack.js";
 
+// ROUTES
+import paystackRoutes from "./routes/paystack.js";
+import adminRoutes from "./routes/adminRoutes.js";
 import authRoutes from "./routes/authRoutes.js";
 import flutterwavePay from "./routes/flutterwavePay.js";
 import flutterwaveWebhook from "./routes/flutterwaveWebhook.js";
 import paypalRoutes from "./routes/paypalRoutes.js";
-//import stripePay from "./routes/stripePay.js";
+import dodopayRoutes from "./routes/dodopayRoutes.js";
+// DodoPay Webhook uses raw body
+import dodoPayWebhook from "./routes/dodopayWebhook.js";
+
 
 dotenv.config();
 const app = express();
@@ -31,39 +36,40 @@ console.log("DEBUG: Loaded Environment Variables:");
   console.log(`- ${key}: ${process.env[key] ? "✅ Loaded" : "❌ MISSING"}`);
 });
 
-// ✅ Middleware
+// Middleware
 app.use(cors());
 app.use(express.json());
 
-// ✅ MongoDB Connection
+// MongoDB Connection
 mongoose
-  .connect(process.env.MONGO_URI, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-  })
+  .connect(process.env.MONGO_URI)
   .then(() => console.log("✅ MongoDB connected"))
   .catch((err) => console.error("❌ Mongo connection error:", err));
 
-// ✅ Routes
+// ROUTES
+app.use("/api/paystack", paystackRoutes);
+app.use("/api/auth", authRoutes);
+app.use("/api/admin", adminRoutes);
+
+app.use("/api/dodopay", dodopayRoutes);
 app.use("/api/donate", flutterwavePay);
 app.use("/api/webhook/flutterwave", flutterwaveWebhook);
 app.use("/api/paypal", paypalRoutes);
-app.use("/api/paystack", paystackRoutes);
-app.use("/api/auth", authRoutes);
-//app.use("/api/stripe", stripePay);
+app.use("/webhook", dodoPayWebhook);
 
-// ✅ Health check route
+// AFTER webhook register, continue normal JSON parsing
+app.use(express.json());
+
+// Health check
 app.get("/", (req, res) => {
   res.send("GoFundSS Backend is running ✅");
 });
 
-// ✅ Catch all other routes (important fix for “Cannot GET /api/...”)
+// 404 fallback
 app.use((req, res) => {
   res.status(404).json({ error: "Route not found" });
 });
 
-// ✅ Start server
+// Start Server
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () =>
-  console.log(`🚀 Server running on port ${PORT}`)
-);
+app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
