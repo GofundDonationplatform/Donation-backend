@@ -4,7 +4,7 @@ import cors from "cors";
 import dotenv from "dotenv";
 import mongoose from "mongoose";
 
-// ROUTES
+// Routes
 import paystackRoutes from "./routes/paystack.js";
 import adminRoutes from "./routes/adminRoutes.js";
 import authRoutes from "./routes/authRoutes.js";
@@ -12,64 +12,41 @@ import flutterwavePay from "./routes/flutterwavePay.js";
 import flutterwaveWebhook from "./routes/flutterwaveWebhook.js";
 import paypalRoutes from "./routes/paypalRoutes.js";
 import dodopayRoutes from "./routes/dodopayRoutes.js";
-// DodoPay Webhook uses raw body
-import dodoPayWebhook from "./routes/dodopayWebhook.js";
-
 
 dotenv.config();
-const app = express();
 
-// DEBUG ENV CHECKER
-console.log("DEBUG: Loaded Environment Variables:");
-[
-  "MONGO_URI",
-  "FLW_SECRET_KEY",
-  "FLW_PUBLIC_KEY",
-  "FLW_ENCRYPTION_KEY",
-  "FLW_WEBHOOK_SECRET",
-  "PAYSTACK_SECRET_KEY",
-  "SEERBIT_SECRET",
-  "CHIPPER_SECRET_KEY",
-  "PAYPAL_CLIENT_ID",
-  "PAYPAL_CLIENT_SECRET"
-].forEach(key => {
-  console.log(`- ${key}: ${process.env[key] ? "✅ Loaded" : "❌ MISSING"}`);
-});
+const app = express();
 
 // Middleware
 app.use(cors());
 app.use(express.json());
 
-// MongoDB Connection
+// MongoDB
 mongoose
   .connect(process.env.MONGO_URI)
   .then(() => console.log("✅ MongoDB connected"))
-  .catch((err) => console.error("❌ Mongo connection error:", err));
+  .catch((err) => console.error("❌ Mongo error:", err));
 
-// ROUTES
+  app.post("/api/dodopay/initiate-test", (req, res) => {
+  res.json({ ok: true });
+ });
+
+// Routes
 app.use("/api/paystack", paystackRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/admin", adminRoutes);
-
-app.use("/api/dodopay", dodopayRoutes);
 app.use("/api/donate", flutterwavePay);
 app.use("/api/webhook/flutterwave", flutterwaveWebhook);
 app.use("/api/paypal", paypalRoutes);
-app.use("/webhook", dodoPayWebhook);
-
-// AFTER webhook register, continue normal JSON parsing
-app.use(express.json());
+app.use("/api/dodopay", dodopayRoutes);
 
 // Health check
 app.get("/", (req, res) => {
   res.send("GoFundSS Backend is running ✅");
 });
 
-// 404 fallback
-app.use((req, res) => {
-  res.status(404).json({ error: "Route not found" });
-});
-
-// Start Server
+// Start server
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
+app.listen(PORT, () =>
+  console.log(`🚀 Server running on http://localhost:${PORT}`)
+);
