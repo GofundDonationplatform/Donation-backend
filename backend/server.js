@@ -12,6 +12,7 @@ import flutterwavePay from "./routes/flutterwavePay.js";
 import flutterwaveWebhook from "./routes/flutterwaveWebhook.js";
 import paypalRoutes from "./routes/paypalRoutes.js";
 import dodopayRoutes from "./routes/dodopayRoutes.js";
+import dodoPayWebhook from "./routes/dodopayWebhook.js";
 
 dotenv.config();
 
@@ -39,6 +40,7 @@ app.use("/api/donate", flutterwavePay);
 app.use("/api/webhook/flutterwave", flutterwaveWebhook);
 app.use("/api/paypal", paypalRoutes);
 app.use("/api/dodopay", dodopayRoutes);
+app.use("/api/dodopay", dodoPayWebhook);
 
 // Health check
 app.get("/", (req, res) => {
