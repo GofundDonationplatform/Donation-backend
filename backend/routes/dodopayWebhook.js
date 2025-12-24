@@ -10,23 +10,27 @@ router.post(
     const signature = req.headers["dodo-signature"];
     const payload = req.body;
 
-    const expected = crypto
+    const expectedSignature = crypto
       .createHmac("sha256", process.env.DODOPAY_WEBHOOK_SECRET)
       .update(payload)
       .digest("hex");
 
-    if (signature !== expected) {
-      return res.status(400).send("Invalid signature");
+    if (signature !== expectedSignature) {
+      return res.status(401).send("Invalid signature");
     }
 
     const event = JSON.parse(payload.toString());
 
     if (event.type === "checkout.session.completed") {
-      console.log("✅ DodoPay Payment Confirmed:", event.data);
-      // TODO: update donation status in DB
+      const session = event.data;
+      console.log("✅ DodoPay payment confirmed:", session.id);
+
+      // TODO:
+      // - mark donation as paid in DB
+      // - send receipt email
     }
 
-    res.sendStatus(200);
+    res.json({ received: true });
   }
 );
 
