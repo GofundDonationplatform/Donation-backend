@@ -1,47 +1,54 @@
 // routes/dodopayRoutes.js
 import express from "express";
-import fetch from "node-fetch";
+import DodoPayments from "dodopayments";
 
 const router = express.Router();
 
+const dodo = new DodoPayments({
+  bearerToken: process.env.DODO_PAYMENTS_API_KEY,
+  environment: "live_mode", // change to test_mode if needed
+});
+
+/**
+ * CREATE DODOPAY CHECKOUT SESSION
+ */
 router.post("/initiate", async (req, res) => {
   try {
-    const { amount, email, name, currency } = req.body;
+    const { amount, email, name } = req.body;
 
     if (!amount || !email) {
-      return res.status(400).json({ error: "Missing amount or email" });
+      return res.status(400).json({ error: "Amount and email required" });
     }
 
-    const response = await fetch("https://api.dodopay.com/v1/checkout", {
-      method: "POST",
-      headers: {
-        "Authorization": `Bearer ${process.env.DODOPAY_SECRET_KEY}`,
-        "Content-Type": "application/json",
+    // Convert to smallest unit if required (confirm with DodoPay)
+    const amountInCents = Math.round(Number(amount) * 100);
+
+    const session = await dodo.checkoutSessions.create({
+      customer: {
+        email,
+        name: name || "Anonymous Donor",
       },
-      body: JSON.stringify({
-        amount: Number(amount),
-        currency: currency || "USD",
-        customer: {
-          email,
-          name: name || "Anonymous Donor",
+      line_items: [
+        {
+          name: "Donation",
+          amount: amountInCents,
+          currency: "USD",
+          quantity: 1,
         },
-        redirect_url: `${process.env.FRONTEND_URL}/donate-success?provider=dodopay`,
-        webhook_url: `${process.env.BACKEND_URL}/api/dodopay/webhook`,
-      }),
+      ],
+      return_url: `${process.env.FRONTEND_URL}/donate-success?provider=dodopay`,
     });
 
-    const data = await response.json();
+    console.log("✅ DodoPay session created:", session.url);
 
-    if (!data?.checkout_url) {
-      console.error("❌ DodoPay API error:", data);
-      return res.status(400).json({ error: "DodoPay initialization failed" });
-    }
-
-    return res.json({ checkout_url: data.checkout_url });
-
-  } catch (err) {
-    console.error("❌ DodoPay Server Error:", err);
-    res.status(500).json({ error: "DodoPay server error" });
+    return res.json({
+      checkout_url: session.url, // ✅ REAL DODOPAY CHECKOUT
+    });
+  } catch (error) {
+    console.error("❌ DodoPay error:", error);
+    return res.status(500).json({
+      error: "DodoPay initialization failed",
+    });
   }
 });
 
