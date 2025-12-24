@@ -4,13 +4,14 @@ import DodoPayments from "dodopayments";
 
 const router = express.Router();
 
-const dodo = new DodoPayments({
+// Initialize DodoPay client (LIVE MODE)
+const client = new DodoPayments({
   bearerToken: process.env.DODO_PAYMENTS_API_KEY,
-  environment: "live_mode", // change to test_mode if needed
+  environment: "live_mode", // 🔥 LIVE
 });
 
 /**
- * CREATE DODOPAY CHECKOUT SESSION
+ * INITIATE DODOPAY CHECKOUT
  */
 router.post("/initiate", async (req, res) => {
   try {
@@ -20,32 +21,39 @@ router.post("/initiate", async (req, res) => {
       return res.status(400).json({ error: "Amount and email required" });
     }
 
-    // Convert to smallest unit if required (confirm with DodoPay)
-    const amountInCents = Math.round(Number(amount) * 100);
+    console.log("🟣 DodoPay LIVE INIT:", { amount, email, name });
 
-    const session = await dodo.checkoutSessions.create({
+    /**
+     * Create checkout session
+     */
+    const session = await client.checkoutSessions.create({
+      product_cart: [
+        {
+          product_id: "donation", // virtual product
+          quantity: 1,
+          price: Number(amount) * 100, // cents
+          currency: "USD",
+        },
+      ],
       customer: {
         email,
         name: name || "Anonymous Donor",
       },
-      line_items: [
-        {
-          name: "Donation",
-          amount: amountInCents,
-          currency: "USD",
-          quantity: 1,
-        },
-      ],
       return_url: `${process.env.FRONTEND_URL}/donate-success?provider=dodopay`,
+      cancel_url: `${process.env.FRONTEND_URL}/donate-cancelled`,
+      metadata: {
+        purpose: "donation",
+      },
     });
 
     console.log("✅ DodoPay session created:", session.url);
 
     return res.json({
-      checkout_url: session.url, // ✅ REAL DODOPAY CHECKOUT
+      checkout_url: session.url, // 🔥 REAL CHECKOUT URL
     });
+
   } catch (error) {
-    console.error("❌ DodoPay error:", error);
+    console.error("❌ DodoPay LIVE Error:", error);
     return res.status(500).json({
       error: "DodoPay initialization failed",
     });
