@@ -1,29 +1,33 @@
-// routes/dodopayWebhook.js
 import express from "express";
 import crypto from "crypto";
 
 const router = express.Router();
 
-router.post("/webhook", express.raw({ type: "*/*" }), (req, res) => {
-  const signature = req.headers["x-dodopay-signature"];
+router.post(
+  "/webhook",
+  express.raw({ type: "application/json" }),
+  (req, res) => {
+    const signature = req.headers["dodo-signature"];
+    const payload = req.body;
 
-  const hash = crypto
-    .createHmac("sha256", process.env.DODOPAY_WEBHOOK_SECRET)
-    .update(req.body)
-    .digest("hex");
+    const expected = crypto
+      .createHmac("sha256", process.env.DODOPAY_WEBHOOK_SECRET)
+      .update(payload)
+      .digest("hex");
 
-  if (hash !== signature) {
-    return res.status(401).send("Invalid signature");
+    if (signature !== expected) {
+      return res.status(400).send("Invalid signature");
+    }
+
+    const event = JSON.parse(payload.toString());
+
+    if (event.type === "checkout.session.completed") {
+      console.log("✅ DodoPay Payment Confirmed:", event.data);
+      // TODO: update donation status in DB
+    }
+
+    res.sendStatus(200);
   }
-
-  const event = JSON.parse(req.body.toString());
-
-  if (event.status === "success") {
-    console.log("✅ DodoPay payment successful:", event);
-    // TODO: mark donation as paid in DB
-  }
-
-  res.sendStatus(200);
-});
+);
 
 export default router;
