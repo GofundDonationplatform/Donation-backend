@@ -3,21 +3,10 @@ import DodoPayments from "dodopayments";
 
 const router = express.Router();
 
-const dodo = new DodoPayments({
+const client = new DodoPayments({
   bearerToken: process.env.DODO_PAYMENTS_API_KEY,
-  environment: "live_mode",
+  environment: "live_mode", // change to test_mode if testing
 });
-
-/**
- * MAP AMOUNT → PRODUCT ID
- * These products MUST exist in DodoPay dashboard
- */
-const DONATION_PRODUCTS = {
-  10: "prod_10USD_ID",
-  25: "prod_25USD_ID",
-  50: "prod_50USD_ID",
-  100: "prod_100USD_ID",
-};
 
 router.post("/initiate", async (req, res) => {
   try {
@@ -27,23 +16,19 @@ router.post("/initiate", async (req, res) => {
       return res.status(400).json({ error: "Missing amount or email" });
     }
 
-    const productId = DONATION_PRODUCTS[amount];
-
-    if (!productId) {
-      return res.status(400).json({
-        error: "Invalid donation amount",
-      });
-    }
-
-    const session = await dodo.checkoutSessions.create({
+    const session = await client.checkoutSessions.create({
       product_cart: [
         {
-          product_id: productId,
+          product_id: process.env.DODO_DONATION_PRODUCT_ID,
           quantity: 1,
+          amount: Math.round(Number(amount) * 100), // cents
         },
       ],
-      customer_email: email,
-      return_url: `${process.env.FRONTEND_URL}/donate-success?provider=dodopay`,
+      customer: {
+        email,
+        name: name || "Anonymous Donor",
+      },
+      return_url: `${process.env.FRONTEND_URL}/donate-success`,
     });
 
     return res.json({
@@ -52,9 +37,7 @@ router.post("/initiate", async (req, res) => {
 
   } catch (err) {
     console.error("❌ DodoPay INIT ERROR:", err);
-    return res.status(500).json({
-      error: "DodoPay initialization failed",
-    });
+    return res.status(500).json({ error: "DodoPay initialization failed" });
   }
 });
 
