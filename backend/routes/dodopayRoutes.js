@@ -3,10 +3,21 @@ import DodoPayments from "dodopayments";
 
 const router = express.Router();
 
-const client = new DodoPayments({
+const dodo = new DodoPayments({
   bearerToken: process.env.DODO_PAYMENTS_API_KEY,
-  environment: "live_mode", // change to test_mode if needed
+  environment: "live_mode",
 });
+
+/**
+ * MAP AMOUNT → PRODUCT ID
+ * These products MUST exist in DodoPay dashboard
+ */
+const DONATION_PRODUCTS = {
+  10: "prod_10USD_ID",
+  25: "prod_25USD_ID",
+  50: "prod_50USD_ID",
+  100: "prod_100USD_ID",
+};
 
 router.post("/initiate", async (req, res) => {
   try {
@@ -16,37 +27,31 @@ router.post("/initiate", async (req, res) => {
       return res.status(400).json({ error: "Missing amount or email" });
     }
 
-    /**
-     * IMPORTANT:
-     * DodoPay DOES NOT accept raw amount
-     * You MUST use product_cart
-     */
-    const session = await client.checkoutSessions.create({
+    const productId = DONATION_PRODUCTS[amount];
+
+    if (!productId) {
+      return res.status(400).json({
+        error: "Invalid donation amount",
+      });
+    }
+
+    const session = await dodo.checkoutSessions.create({
       product_cart: [
         {
-          product_id: process.env.DODO_PAYMENTS_ENDPOINT_ID,
+          product_id: productId,
           quantity: 1,
         },
       ],
-      customer: {
-        email,
-        name: name || "Anonymous Donor",
-      },
-      metadata: {
-        purpose: "platform_contribution",
-      },
+      customer_email: email,
       return_url: `${process.env.FRONTEND_URL}/donate-success?provider=dodopay`,
     });
-
-    if (!session?.url) {
-      throw new Error("No checkout URL returned");
-    }
 
     return res.json({
       checkout_url: session.url,
     });
-  } catch (error) {
-    console.error("❌ DodoPay Error:", error.message);
+
+  } catch (err) {
+    console.error("❌ DodoPay INIT ERROR:", err);
     return res.status(500).json({
       error: "DodoPay initialization failed",
     });
