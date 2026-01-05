@@ -3,65 +3,55 @@ import DodoPayments from "dodopayments";
 
 const router = express.Router();
 
+const client = new DodoPayments({
+  bearerToken: process.env.DODO_PAYMENTS_API_KEY,
+  environment: "live_mode", // or "test_mode"
+});
+
 router.post("/initiate", async (req, res) => {
   try {
-    console.log("🟡 Incoming body:", req.body);
-
-    console.log("🟡 ENV CHECK:", {
-      hasApiKey: !!process.env.DODO_PAYMENTS_API_KEY,
-      productId: process.env.DODO_DONATION_PRODUCT_ID,
-      frontend: process.env.FRONTEND_URL,
-    });
-
-    const client = new DodoPayments({
-      bearerToken: process.env.DODO_PAYMENTS_API_KEY,
-      environment: "live_mode",
-    });
-
     const { amount, email, name } = req.body;
 
     if (!amount || !email) {
       return res.status(400).json({ error: "Missing amount or email" });
     }
 
-    const productId = process.env.DODO_DONATION_PRODUCT_ID;
+    // Map donation amounts to product IDs
+    const PRODUCT_MAP = {
+      200: process.env.DODO_PRODUCT_200,
+      500: process.env.DODO_PRODUCT_500,
+      1000: process.env.DODO_PRODUCT_1000,
+      2500: process.env.DODO_PRODUCT_2500,
+      5000: process.env.DODO_PRODUCT_5000,
+      10000: process.env.DODO_PRODUCT_10000,
+    };
 
-    const quantity = Math.floor(Number(amount));
+    const productId = PRODUCT_MAP[amount];
 
-    console.log("🟡 Creating checkout with:", {
-      productId,
-      quantity,
-      email,
-    });
+    if (!productId) {
+      return res.status(400).json({ error: "Invalid donation amount" });
+    }
 
     const session = await client.checkoutSessions.create({
       product_cart: [
         {
           product_id: productId,
-          quantity,
+          quantity: 1, // ✅ ALWAYS 1
         },
       ],
       customer: {
         email,
-        name: name || "Anonymous",
+        name: name || "Anonymous Donor",
       },
       return_url: `${process.env.FRONTEND_URL}/donate-success?provider=dodopay`,
     });
 
-    console.log("🟢 DodoPay session:", session);
-
     return res.json({
-      checkout_url: session.url,
+      checkout_url: session.checkout_url,
     });
   } catch (err) {
-    console.error("🔴 DODOPAY FULL ERROR:", err);
-    console.error("🔴 ERROR MESSAGE:", err?.message);
-    console.error("🔴 ERROR RESPONSE:", err?.response);
-
-    return res.status(500).json({
-      error: "DodoPay initialization failed",
-      details: err?.message,
-    });
+    console.error("❌ DodoPay Error:", err);
+    return res.status(500).json({ error: "DodoPay initialization failed" });
   }
 });
 
