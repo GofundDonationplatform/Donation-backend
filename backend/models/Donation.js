@@ -1,15 +1,33 @@
-// models/Donation.js
 import mongoose from "mongoose";
 
-const DonationSchema = new mongoose.Schema({
-  name: { type: String, default: "Anonymous" },
-  email: { type: String, default: "donor@example.com" },
-  amount: { type: Number, required: true },
-  currency: { type: String, default: "USD" },
-  tx_ref: { type: String, required: true, unique: true },
-  status: { type: String, default: "pending" },
-  flw_id: { type: String },
-  meta: { type: Object },
-}, { timestamps: true });
+const DonationSchema = new mongoose.Schema(
+  {
+    name: { type: String, default: "Anonymous" },
+    email: { type: String, default: "donor@example.com" },
+    amount: { type: Number, required: true },
+    currency: { type: String, default: "USD" },
+
+    tx_ref: { type: String, required: true, unique: true },
+
+    status: {
+      type: String,
+      enum: ["pending", "completed", "rejected"],
+      default: "pending",
+    },
+
+    method: {
+      type: String,
+      enum: ["flutterwave", "paystack", "paypal", "dodopay", "gray"],
+      default: "flutterwave",
+    },
+
+    flw_id: { type: String }, // keep for Flutterwave
+    meta: { type: Object },
+
+    // For Gray Business only
+    receiptUrl: { type: String }, // optional upload
+  },
+  { timestamps: true }
+);
 
 export default mongoose.model("Donation", DonationSchema);
