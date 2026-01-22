@@ -1,6 +1,6 @@
 // routes/gray.js
 import express from "express";
-import Donation from "../models/Donation.js";
+import digital contribution from "../models/digital contribution.js";
 import multer from "multer";
 import path from "path";
 import fs from "fs";
@@ -35,7 +35,7 @@ router.post("/initiate", async (req, res) => {
 
     const tx_ref = "GRAY_" + Date.now(); // unique reference for Gray
 
-    const donation = await Donation.create({
+    const digital contribution = await digital contribution.create({
       name: name || "Anonymous",
       email: email || "donor@example.com",
       amount,
@@ -48,12 +48,12 @@ router.post("/initiate", async (req, res) => {
     const directions = `
       Please transfer ${amount} USD to:
       Bank: Grey Bank
-      Account Name: Gray Business Donations
+      Account Name: Gray Business digital contributions
       Account Number: 1234567890
     `;
 
     res.json({
-      donationId: donation._id,
+      digital contributionId: digital contribution._id,
       tx_ref,
       directions,
       message: "Follow the instructions to complete payment, then confirm below.",
@@ -67,19 +67,19 @@ router.post("/initiate", async (req, res) => {
 // -------------------------
 // Confirm Gray Payment
 // -------------------------
-router.post("/confirm/:donationId", upload.single("receipt"), async (req, res) => {
+router.post("/confirm/:digital contributionId", upload.single("receipt"), async (req, res) => {
   try {
-    const { donationId } = req.params;
+    const { digital contributionId } = req.params;
 
-    const donation = await Donation.findById(donationId);
-    if (!donation) return res.status(404).json({ error: "Donation not found" });
+    const digital contribution = await digital contribution.findById(digital contributionId);
+    if (!digital contribution) return res.status(404).json({ error: "digital contribution not found" });
 
-    donation.status = "completed"; // mark as paid
-    if (req.file) donation.receiptUrl = req.file.path; // save uploaded receipt path
+    digital contribution.status = "completed"; // mark as paid
+    if (req.file) digital contribution.receiptUrl = req.file.path; // save uploaded receipt path
 
-    await donation.save();
+    await digital contribution.save();
 
-    res.json({ message: "Donation confirmed successfully!", donation });
+    res.json({ message: "digital contribution confirmed successfully!", digital contribution });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Gray payment confirmation failed" });

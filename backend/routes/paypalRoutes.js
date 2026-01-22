@@ -2,7 +2,7 @@
 import express from "express";
 import axios from "axios";
 import dotenv from "dotenv";
-import Donation from "../models/Donation.js";
+import digital contribution from "../models/digital contribution.js";
 
 dotenv.config();
 const router = express.Router();
@@ -53,11 +53,11 @@ router.post("/create-payment", async (req, res) => {
               currency_code: currency,
               value: (Number(amount) / 100).toFixed(2), // Convert cents → USD
             },
-            description: "GoFundSS Donation",
+            description: "GocreditsS digital contribution",
           },
         ],
         application_context: {
-          brand_name: "GoFundSS Donation Platform",
+          brand_name: "GocreditsS digital contribution Platform",
           landing_page: "LOGIN",
           user_action: "PAY_NOW",
           return_url: `${
@@ -76,8 +76,8 @@ router.post("/create-payment", async (req, res) => {
       }
     );
 
-    // Save pending donation
-    await Donation.create({
+    // Save pending digital contribution
+    await digital contribution.create({
       name: name || "Anonymous Donor",
       email: email || "donor@example.com",
       amount: Number(amount) / 100,
@@ -120,7 +120,7 @@ router.post("/capture-order", async (req, res) => {
 
     console.log("✅ PayPal capture success:", capture.data?.status);
 
-    await Donation.findOneAndUpdate(
+    await digital contribution.findOneAndUpdate(
       { tx_ref: orderID },
       { status: "successful", meta: capture.data }
     );

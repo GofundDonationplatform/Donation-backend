@@ -1,6 +1,6 @@
 import express from "express";
 import axios from "axios";
-import Donation from "../models/Donation.js";
+import Transaction from "../models/Transactiontion.js";
 import dotenv from "dotenv";
 dotenv.config();
 
@@ -23,7 +23,7 @@ router.post("/", async (req, res) => {
 
     const tx_ref = genRef();
 
-    await Donation.create({
+    await Transaction.create({
       name: name || "Anonymous",
       email: email || "donor@example.com",
       amount,
@@ -45,7 +45,7 @@ router.post("/", async (req, res) => {
       },
       payment_options: "card",
       customizations: {
-        title: "GoFundSS Donation",
+        title: "GFSSGA Digital Service Access",
         description: "Support our cause",
       },
     };

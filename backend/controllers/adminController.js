@@ -1,5 +1,5 @@
 import User from "../models/User.js";
-import Donation from "../models/Donation.js"; // create later
+import digital contribution from "../models/digital contribution.js"; // create later
 import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
 
@@ -54,16 +54,16 @@ export const getAdminDashboard = async (req, res) => {
     const totalUsers = await User.countDocuments({ role: "user" });
     const totalAdmins = await User.countDocuments({ role: "admin" });
 
-    const totalDonations = await Donation.countDocuments();
-    const donationSum = await Donation.aggregate([
+    const totaldigital contributions = await digital contribution.countDocuments();
+    const digital contributionsum = await digital contribution.aggregate([
       { $group: { _id: null, total: { $sum: "$amount" } } }
     ]);
 
     res.json({
       totalUsers,
       totalAdmins,
-      totalDonations,
-      donationAmount: donationSum[0]?.total || 0
+      totaldigital contributions,
+      digital contributionAmount: digital contributionsum[0]?.total || 0
     });
 
   } catch (error) {

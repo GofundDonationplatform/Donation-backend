@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 
-const DonationSchema = new mongoose.Schema(
+const TransactionSchema = new mongoose.Schema(
   {
     name: { type: String, default: "Anonymous" },
     email: { type: String, default: "donor@example.com" },
@@ -30,4 +30,4 @@ const DonationSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-export default mongoose.model("Donation", DonationSchema);
+export default mongoose.model("Transaction", TransactionSchema);

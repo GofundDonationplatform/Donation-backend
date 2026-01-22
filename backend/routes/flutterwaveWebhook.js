@@ -1,5 +1,5 @@
 import express from "express";
-import Donation from "../models/Donation.js";
+import Transaction from "../models/Transaction.js";
 import dotenv from "dotenv";
 dotenv.config();
 
@@ -21,9 +21,9 @@ router.post("/", express.json(), async (req, res) => {
     if (!tx_ref) return res.status(400).json({ received: false, reason: "missing_tx_ref" });
 
     if (status === "successful") {
-      await Donation.findOneAndUpdate({ tx_ref }, { status: "successful" });
+      await Transaction.findOneAndUpdate({ tx_ref }, { status: "successful" });
     } else if (status === "failed") {
-      await Donation.findOneAndUpdate({ tx_ref }, { status: "failed" });
+      await Transaction.findOneAndUpdate({ tx_ref }, { status: "failed" });
     }
 
     res.json({ received: true });

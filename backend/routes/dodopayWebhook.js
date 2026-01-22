@@ -20,7 +20,7 @@ router.post("/webhook", express.raw({ type: "application/json" }), (req, res) =>
 
   if (event.type === "checkout.session.completed") {
     console.log("✅ DodoPay payment confirmed:", event.data);
-    // TODO: mark donation as paid in DB
+    // TODO: mark digital contribution as paid in DB
   }
 
   res.json({ received: true });

@@ -2,7 +2,7 @@
 import express from "express";
 import Stripe from "stripe";
 import dotenv from "dotenv";
-import Donation from "../models/Donation.js";
+import digital contribution from "../models/digital contribution.js";
 dotenv.config();
 
 const router = express.Router();
@@ -16,8 +16,8 @@ router.post("/create-checkout-session", async (req, res) => {
       return res.status(400).json({ error: "Invalid amount" });
     }
 
-    // create pending donation
-    const donation = await Donation.create({
+    // create pending digital contribution
+    const digital contribution = await digital contribution.create({
       name: name || "Anonymous",
       email: email || "donor@example.com",
       amount,
@@ -33,7 +33,7 @@ router.post("/create-checkout-session", async (req, res) => {
           price_data: {
             currency: "usd",
             product_data: {
-              name: "GoFundSS Donation",
+              name: "GocreditsS digital contribution",
             },
             unit_amount: Math.round(amount * 100), // in cents
           },
@@ -44,7 +44,7 @@ router.post("/create-checkout-session", async (req, res) => {
       cancel_url: `${process.env.FRONTEND_URL}/donate-cancel`,
       customer_email: email,
       metadata: {
-        donationId: donation._id.toString(),
+        digital contributionId: digital contribution._id.toString(),
       },
     });
 

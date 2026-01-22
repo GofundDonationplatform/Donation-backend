@@ -9,12 +9,12 @@ const dodo = new DodoPayments({
 });
 
 const PRODUCT_MAP = {
-  100: process.env.DODO_DONATION_PRODUCT_100,
-  150: process.env.DODO_DONATION_PRODUCT_150,
-  200: process.env.DODO_DONATION_PRODUCT_200,
-  500: process.env.DODO_DONATION_PRODUCT_500,
-  750: process.env.DODO_DONATION_PRODUCT_750,
-  1000: process.env.DODO_DONATION_PRODUCT_1000,
+  100: process.env.DODO_digital contribution_PRODUCT_100,
+  150: process.env.DODO_digital contribution_PRODUCT_150,
+  200: process.env.DODO_digital contribution_PRODUCT_200,
+  500: process.env.DODO_digital contribution_PRODUCT_500,
+  750: process.env.DODO_digital contribution_PRODUCT_750,
+  1000: process.env.DODO_digital contribution_PRODUCT_1000,
 };
 
 router.post("/initiate", async (req, res) => {
@@ -26,7 +26,7 @@ router.post("/initiate", async (req, res) => {
     const productId = PRODUCT_MAP[amount];
 
     if (!productId) {
-      return res.status(400).json({ error: "Invalid donation amount" });
+      return res.status(400).json({ error: "Invalid digital contribution amount" });
     }
 
     const session = await dodo.checkoutSessions.create({

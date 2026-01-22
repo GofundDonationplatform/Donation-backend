@@ -1,7 +1,7 @@
 // routes/paystackRoutes.js
 import express from "express";
 import axios from "axios";
-import Donation from "../models/Donation.js"; // adjust path if your models folder is elsewhere
+import Transaction from "../models/Transaction.js"; // adjust path if your models folder is elsewhere
 import dotenv from "dotenv";
 dotenv.config();
 
@@ -25,8 +25,8 @@ router.post("/initialize", async (req, res) => {
     // Generate a unique reference
     const tx_ref = `ps_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
 
-    // Optional: create a pending Donation record
-    await Donation.create({
+    // Optional: create a pending Transaction record
+    await Transaction.create({
       name,
       email,
       amount: Number(amount),
@@ -71,10 +71,10 @@ router.get("/verify", async (req, res) => {
       headers: { Authorization: `Bearer ${paystackSecret}` },
     });
 
-    // If successful, update Donation status
+    // If successful, update Transaction status
     const data = response.data?.data;
     if (data && data.status === "success") {
-      await Donation.findOneAndUpdate({ tx_ref: reference }, { status: "successful", meta: data });
+      await Transaction.findOneAndUpdate({ tx_ref: reference }, { status: "successful", meta: data });
     }
 
     res.json(response.data);
