@@ -10,8 +10,6 @@ import adminRoutes from "./routes/adminRoutes.js";
 import authRoutes from "./routes/authRoutes.js";
 import flutterwavePay from "./routes/flutterwavePay.js";
 import flutterwaveWebhook from "./routes/flutterwaveWebhook.js";
-import dodopayRoutes from "./routes/dodopayRoutes.js";
-import dodoPayWebhook from "./routes/dodopayWebhook.js";
 import grayRoutes from "./routes/gray.js";
 
 
@@ -29,9 +27,6 @@ mongoose
   .then(() => console.log("✅ MongoDB connected"))
   .catch((err) => console.error("❌ Mongo error:", err));
 
-  app.post("/api/dodopay/initiate-test", (req, res) => {
-  res.json({ ok: true });
- });
 
 // Routes
 app.use("/api/paystack", paystackRoutes);
@@ -39,8 +34,6 @@ app.use("/api/auth", authRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/donate", flutterwavePay);
 app.use("/api/webhook/flutterwave", flutterwaveWebhook);
-app.use("/api/dodopay", dodopayRoutes);
-app.use("/api/dodopay", dodoPayWebhook);
 app.use("/api/gray", grayRoutes);
 app.use("/uploads", express.static("uploads"));
 
