@@ -1,6 +1,6 @@
 import express from "express";
 import axios from "axios";
-import Transaction from "../models/Transactiontion.js";
+import Transaction from "../models/Transaction.js";
 import dotenv from "dotenv";
 dotenv.config();
 
