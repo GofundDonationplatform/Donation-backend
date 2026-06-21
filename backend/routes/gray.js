@@ -1,6 +1,6 @@
 // routes/gray.js
 import express from "express";
-import digital contribution from "../models/digital contribution.js";
+import Transaction from "../models/Transaction.js";
 import multer from "multer";
 import path from "path";
 import fs from "fs";
@@ -35,7 +35,7 @@ router.post("/initiate", async (req, res) => {
 
     const tx_ref = "GRAY_" + Date.now(); // unique reference for Gray
 
-    const digital contribution = await digital contribution.create({
+    const transaction = await Transaction.create({
       name: name || "Anonymous",
       email: email || "donor@example.com",
       amount,
@@ -48,12 +48,12 @@ router.post("/initiate", async (req, res) => {
     const directions = `
       Please transfer ${amount} USD to:
       Bank: Grey Bank
-      Account Name: Gray Business digital contributions
+      Account Name: Gray Business transactiin
       Account Number: 1234567890
     `;
 
     res.json({
-      digital contributionId: digital contribution._id,
+      transactionId: transaction._id,
       tx_ref,
       directions,
       message: "Follow the instructions to complete payment, then confirm below.",
@@ -67,19 +67,19 @@ router.post("/initiate", async (req, res) => {
 // -------------------------
 // Confirm Gray Payment
 // -------------------------
-router.post("/confirm/:digital contributionId", upload.single("receipt"), async (req, res) => {
+router.post("/confirm/:transactionId", upload.single("receipt"), async (req, res) => {
   try {
-    const { digital contributionId } = req.params;
+    const { transactionId } = req.params;
 
-    const digital contribution = await digital contribution.findById(digital contributionId);
-    if (!digital contribution) return res.status(404).json({ error: "digital contribution not found" });
+    const transaction = await Transaction.findById(transactionId);
+    if (!transaction) return res.status(404).json({ error: "transaction not found" });
 
-    digital contribution.status = "completed"; // mark as paid
-    if (req.file) digital contribution.receiptUrl = req.file.path; // save uploaded receipt path
+    transaction.status = "completed"; // mark as paid
+    if (req.file) ditransaction.receiptUrl = req.file.path; // save uploaded receipt path
 
-    await digital contribution.save();
+    await transaction.save();
 
-    res.json({ message: "digital contribution confirmed successfully!", digital contribution });
+    res.json({ message: "transactiin confirmed successfully!", transaction });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Gray payment confirmation failed" });
