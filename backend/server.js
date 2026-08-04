@@ -11,6 +11,8 @@ import authRoutes from "./routes/authRoutes.js";
 import flutterwavePay from "./routes/flutterwavePay.js";
 import flutterwaveWebhook from "./routes/flutterwaveWebhook.js";
 import grayRoutes from "./routes/gray.js";
+import campaignRoutes from "./routes/campaignRoutes.js";
+import campaignUpdateRoutes from "./routes/campaignUpdateRoutes.js";
 
 
 dotenv.config();
@@ -36,7 +38,8 @@ app.use("/api/donate", flutterwavePay);
 app.use("/api/webhook/flutterwave", flutterwaveWebhook);
 app.use("/api/gray", grayRoutes);
 app.use("/uploads", express.static("uploads"));
-
+app.use("/api/campaigns", campaignRoutes);
+app.use("/api/campaign-updates", campaignUpdateRoutes);
 
 // Health check
 app.get("/", (req, res) => {
