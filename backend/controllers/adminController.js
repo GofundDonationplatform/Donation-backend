@@ -31,13 +31,40 @@ export const getAdminDashboard = async (req, res) => {
       0
     );
 
+    const activeCampaigns = campaigns.filter(
+      (c) => c.status === "Approved"
+    ).length;
+
+    const pausedCampaigns = campaigns.filter(
+      (c) => c.status === "Paused"
+    ).length;
+
+    const completedCampaigns = campaigns.filter(
+      (c) => c.status === "Completed"
+    ).length;
+
+    const averageGoal =
+      totalCampaigns > 0
+        ? Math.round(totalGoal / totalCampaigns)
+        : 0;
+
+    const completionRate =
+      totalGoal > 0
+        ? Math.round((totalRaised / totalGoal) * 100)
+        : 0;
+
     res.json({
       success: true,
       totalUsers,
       totalAdmins,
       totalCampaigns,
+      activeCampaigns,
+      pausedCampaigns,
+      completedCampaigns,
       totalGoal,
       totalRaised,
+      averageGoal,
+      completionRate,
       totalDonations: completedTransactions.length,
     });
   } catch (err) {
