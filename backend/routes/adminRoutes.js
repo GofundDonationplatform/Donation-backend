@@ -96,4 +96,4 @@ router.get(
   adminOnly,
   getDonations
 );
-
+export default router;
