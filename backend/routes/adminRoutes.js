@@ -8,6 +8,7 @@ import {
   getAdminDashboard,
   getUsers,
   getDonations,
+  toggleAdmin,
 } from "../controllers/adminController.js";
 
 import { protect, adminOnly } from "../middleware/authMiddleware.js";
@@ -96,4 +97,12 @@ router.get(
   adminOnly,
   getDonations
 );
+
+router.put(
+  "/users/:id/toggle-admin",
+  protect,
+  adminOnly,
+  toggleAdmin
+);
+
 export default router;

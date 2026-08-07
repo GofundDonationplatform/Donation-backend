@@ -97,6 +97,56 @@ export const getUsers = async (req, res) => {
 };
 
 // ==============================
+// TOGGLE ADMIN ROLE
+// ==============================
+export const toggleAdmin = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // Prevent an admin from removing their own admin access.
+    if (String(req.user?.id) === String(id)) {
+      return res.status(400).json({
+        success: false,
+        message: "You cannot change your own admin role.",
+      });
+    }
+
+    const user = await User.findById(id);
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    user.isAdmin = !user.isAdmin;
+
+    await user.save();
+
+    res.json({
+      success: true,
+      message: user.isAdmin
+        ? "User promoted to admin"
+        : "Admin role removed",
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        isAdmin: user.isAdmin,
+      },
+    });
+  } catch (err) {
+    console.error("Toggle admin error:", err);
+
+    res.status(500).json({
+      success: false,
+      message: "Unable to update user role",
+    });
+  }
+};
+
+// ==============================
 // DONATIONS (TRANSACTIONS)
 // ==============================
 export const getDonations = async (req, res) => {
