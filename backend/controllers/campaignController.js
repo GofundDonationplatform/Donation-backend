@@ -1,18 +1,48 @@
 import Campaign from "../models/Campaign.js";
+import cloudinary from "../config/cloudinary.js";
+
+const uploadCampaignImage = (buffer) => {
+  return new Promise((resolve, reject) => {
+    const stream = cloudinary.uploader.upload_stream(
+      {
+        folder: "gofundss/campaigns",
+        resource_type: "image",
+      },
+      (error, result) => {
+        if (error) {
+          reject(error);
+        } else {
+          resolve(result);
+        }
+      }
+    );
+
+    stream.end(buffer);
+  });
+};
 
 // Create Campaign
 export const createCampaign = async (req, res) => {
   try {
+    let imageUrl = "";
+
+    if (req.file) {
+      const uploaded = await uploadCampaignImage(req.file.buffer);
+      imageUrl = uploaded.secure_url;
+    }
+
     const campaign = await Campaign.create({
-  ...req.body,
-  image: req.file ? `/uploads/${req.file.filename}` : "",
-});
+      ...req.body,
+      image: imageUrl,
+    });
 
     res.status(201).json({
       success: true,
       campaign,
     });
   } catch (err) {
+    console.error("Create campaign error:", err);
+
     res.status(500).json({
       success: false,
       message: err.message,
@@ -83,7 +113,8 @@ export const updateCampaign = async (req, res) => {
     Object.assign(campaign, req.body);
 
     if (req.file) {
-      campaign.image = `/uploads/${req.file.filename}`;
+      const uploaded = await uploadCampaignImage(req.file.buffer);
+      campaign.image = uploaded.secure_url;
     }
 
     const updatedCampaign = await campaign.save();
@@ -93,6 +124,8 @@ export const updateCampaign = async (req, res) => {
       campaign: updatedCampaign,
     });
   } catch (err) {
+    console.error("Update campaign error:", err);
+
     if (err.name === "CastError") {
       return res.status(404).json({
         success: false,
