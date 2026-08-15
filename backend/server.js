@@ -13,6 +13,7 @@ import flutterwaveWebhook from "./routes/flutterwaveWebhook.js";
 import grayRoutes from "./routes/gray.js";
 import campaignRoutes from "./routes/campaignRoutes.js";
 import campaignUpdateRoutes from "./routes/campaignUpdateRoutes.js";
+import aiRoutes from "./routes/aiRoutes.js";
 
 
 dotenv.config();
@@ -40,6 +41,7 @@ app.use("/api/gray", grayRoutes);
 app.use("/uploads", express.static("uploads"));
 app.use("/api/campaigns", campaignRoutes);
 app.use("/api/campaign-updates", campaignUpdateRoutes);
+app.use("/api/ai", aiRoutes);
 
 // Health check
 app.get("/", (req, res) => {

@@ -31,9 +31,61 @@ export const createCampaign = async (req, res) => {
       imageUrl = uploaded.secure_url;
     }
 
+    const title = req.body.title?.trim();
+    const description = req.body.description?.trim();
+    const category = req.body.category?.trim() || "General";
+    const goalAmount = Number(req.body.goalAmount);
+    const currency = req.body.currency || "USD";
+
+    if (!title) {
+      return res.status(400).json({
+        success: false,
+        message: "Campaign title is required.",
+      });
+    }
+
+    if (!description) {
+      return res.status(400).json({
+        success: false,
+        message: "Campaign description is required.",
+      });
+    }
+
+    if (!Number.isFinite(goalAmount) || goalAmount <= 0) {
+      return res.status(400).json({
+        success: false,
+        message: "Campaign goal must be greater than zero.",
+      });
+    }
+
+    if (!["USD", "NGN", "EUR", "GBP"].includes(currency)) {
+      return res.status(400).json({
+        success: false,
+        message: "Unsupported campaign currency.",
+      });
+    }
+
+    if (!req.user?.id) {
+      return res.status(401).json({
+        success: false,
+        message: "Authenticated user is required.",
+      });
+    }
+
     const campaign = await Campaign.create({
-      ...req.body,
+      title,
+      description,
+      category,
+      goalAmount,
+      currency,
       image: imageUrl,
+
+      createdBy: req.user.id,
+
+      status: "Pending",
+      featured: false,
+      amountRaised: 0,
+      donorCount: 0,
     });
 
     res.status(201).json({
@@ -60,6 +112,34 @@ export const getCampaigns = async (req, res) => {
       campaigns,
     });
   } catch (err) {
+    res.status(500).json({
+      success: false,
+      message: err.message,
+    });
+  }
+};
+
+// Get Current User's Campaigns
+export const getMyCampaigns = async (req, res) => {
+  try {
+    if (!req.user?.id) {
+      return res.status(401).json({
+        success: false,
+        message: "Authenticated user is required.",
+      });
+    }
+
+    const campaigns = await Campaign.find({
+      createdBy: req.user.id,
+    }).sort({ createdAt: -1 });
+
+    res.json({
+      success: true,
+      campaigns,
+    });
+  } catch (err) {
+    console.error("Get my campaigns error:", err);
+
     res.status(500).json({
       success: false,
       message: err.message,

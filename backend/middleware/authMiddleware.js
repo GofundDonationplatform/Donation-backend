@@ -29,7 +29,13 @@ export function protect(req, res, next) {
 }
 
 export function adminOnly(req, res, next) {
-  if (req.user && req.user.isAdmin === true) {
+  if (
+    req.user &&
+    (
+      req.user.role === "admin" ||
+      req.user.isAdmin === true
+    )
+  ) {
     return next();
   }
 

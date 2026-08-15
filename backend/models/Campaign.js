@@ -47,6 +47,12 @@ const campaignSchema = new mongoose.Schema(
       default: "",
     },
 
+    createdBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
+
     featured: {
       type: Boolean,
       default: false,
