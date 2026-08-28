@@ -9,6 +9,7 @@ import {
   getUsers,
   getDonations,
   toggleAdmin,
+  deleteUser,
 } from "../controllers/adminController.js";
 
 import { protect, adminOnly } from "../middleware/authMiddleware.js";
@@ -103,6 +104,13 @@ router.put(
   protect,
   adminOnly,
   toggleAdmin
+);
+
+router.delete(
+  "/users/:id",
+  protect,
+  adminOnly,
+  deleteUser
 );
 
 export default router;

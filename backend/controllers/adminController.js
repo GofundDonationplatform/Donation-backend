@@ -189,3 +189,50 @@ export const getCampaigns = async (req, res) => {
     });
   }
 };
+
+// ==============================
+// DELETE USER
+// ==============================
+export const deleteUser = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // Prevent an admin from deleting their own account.
+    if (String(req.user?.id) === String(id)) {
+      return res.status(400).json({
+        success: false,
+        message: "You cannot delete your own admin account.",
+      });
+    }
+
+    const user = await User.findById(id);
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    await User.findByIdAndDelete(id);
+
+    return res.json({
+      success: true,
+      message: "User deleted successfully",
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        isAdmin: user.isAdmin,
+        role: user.role,
+      },
+    });
+  } catch (err) {
+    console.error("Delete user error:", err);
+
+    return res.status(500).json({
+      success: false,
+      message: "Unable to delete user",
+    });
+  }
+};
